@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Angrezi100 — Reading Comprehension for CAT</title>
+  
 <!-- Google AdSense — publisher ID verified -->
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet">
 <style>
@@ -230,6 +231,34 @@ body {
 </style>
 </head>
 <body data-theme="light">
+  <script>
+    // Safe AdSense wrapper - prevents "No slot size" errors
+    window.loadAdsInView = function() {
+        if (typeof adsbygoogle !== 'undefined') {
+            document.querySelectorAll('.adsbygoogle:not([data-ads-loaded="true"])').forEach(ad => {
+                const container = ad.closest('.ad-slot');
+                if (container && container.offsetWidth > 0 && container.offsetHeight > 0) {
+                    try {
+                        (adsbygoogle = window.adsbygoogle || []).push({});
+                        ad.setAttribute('data-ads-loaded', 'true');
+                    } catch(e) {
+                        // Silently fail - ad will retry on next load
+                    }
+                }
+            });
+        }
+    };
+    
+    // Initial load after DOM ready
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(window.loadAdsInView, 500);
+    });
+    
+    // Reload ads when page changes (for single-page app behavior)
+    function reloadVisibleAds() {
+        setTimeout(window.loadAdsInView, 200);
+    }
+</script>
 
 <!-- MAIN PAGE -->
 <div id="mainPage" class="page active">
@@ -260,6 +289,7 @@ body {
     </div>
 
     <!-- AD SLOT 2: main page below all passages (above footer) -->
+    
     <div class="ad-slot" id="adSlotMainFooter">
       <div class="ad-slot-label">Advertisement</div>
       <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9887862710118026" crossorigin="anonymous"></script>
@@ -351,29 +381,60 @@ function init() { applySettings(); setGreeting(); renderArticleList(); updatePro
 function setGreeting() { const h = new Date().getHours(); let g = 'Good evening'; if (h < 12) g = 'Good morning'; else if (h < 17) g = 'Good afternoon'; document.getElementById('greeting').textContent = g + ' — ready to practice?'; }
 
 function renderArticleList() {
-  const container = document.getElementById('articleListContainer');
-  container.innerHTML = '';
-  for (let i = 0; i < articleTitles.length; i++) {
-    const id = i+1;
-    const d = state.completed[id];
-    const item = document.createElement('div');
-    item.className = 'article-item';
-    item.style.animationDelay = `${Math.min(i * 0.018, 0.9)}s`;
-    item.innerHTML = `<div class="num">${String(id).padStart(2,'0')}</div><div class="title-cell">${articleTitles[i]}</div><div class="score-cell ${d?.score !== undefined ? 'has-score' : ''}">${d?.score !== undefined ? d.score : '—'}</div><div class="check-cell"><div class="custom-check ${d?.completed ? 'checked' : ''}"></div></div>`;
-    item.addEventListener('click', () => openArticle(id));
-    container.appendChild(item);
+    const container = document.getElementById('articleListContainer');
+    if (!container) return;
     
-    // Insert first ad AFTER the 10th passage (index 9)
-    if (i === 9 && !document.getElementById('adAfterTenth')) {
-      const adDiv = document.createElement('div');
-      adDiv.id = 'adAfterTenth';
-      adDiv.className = 'ad-slot';
-      adDiv.innerHTML = `<div class="ad-slot-label">Advertisement</div><script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9887862710118026" crossorigin="anonymous"><\/script>
-      <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-9887862710118026" data-ad-slot="2997808431" data-ad-format="auto" data-full-width-responsive="true"><\/ins>
-      <script>window.setTimeout(function(){ if(window.adsbygoogle) (adsbygoogle = window.adsbygoogle || []).push({}); }, 200);<\/script>`;
-      container.appendChild(adDiv);
+    container.innerHTML = '';
+    
+    for (let i = 0; i < articleTitles.length; i++) {
+        const id = i + 1;
+        const d = state.completed[id];
+        const item = document.createElement('div');
+        item.className = 'article-item';
+        item.style.animationDelay = `${Math.min(i * 0.018, 0.9)}s`;
+        item.innerHTML = `
+            <div class="num">${String(id).padStart(2, '0')}</div>
+            <div class="title-cell">${articleTitles[i]}</div>
+            <div class="score-cell ${d?.score !== undefined ? 'has-score' : ''}">${d?.score !== undefined ? d.score : '—'}</div>
+            <div class="check-cell"><div class="custom-check ${d?.completed ? 'checked' : ''}"></div></div>
+        `;
+        item.addEventListener('click', (function(articleId) {
+            return function() { openArticle(articleId); };
+        })(id));
+        container.appendChild(item);
+        
+        // Insert ad AFTER the 10th passage (index 9)
+        if (i === 9 && !document.getElementById('ad-after-tenth')) {
+            const adDiv = document.createElement('div');
+            adDiv.id = 'ad-after-tenth';
+            adDiv.className = 'ad-slot';
+            adDiv.innerHTML = `
+                <div class="ad-slot-label">Advertisement</div>
+                <ins class="adsbygoogle"
+                     style="display:block"
+                     data-ad-client="ca-pub-9887862710118026"
+                     data-ad-slot="2997808431"
+                     data-ad-format="auto"
+                     data-full-width-responsive="true"></ins>
+            `;
+            container.appendChild(adDiv);
+        }
     }
-  }
+    
+    // Load ads in the newly created slots
+    setTimeout(function() {
+        if (typeof window.loadAdsInView === 'function') {
+            window.loadAdsInView();
+        } else {
+            // Fallback
+            document.querySelectorAll('.adsbygoogle:not([data-ads-loaded="true"])').forEach(function(ad) {
+                try {
+                    (adsbygoogle = window.adsbygoogle || []).push({});
+                    ad.setAttribute('data-ads-loaded', 'true');
+                } catch(e) {}
+            });
+        }
+    }, 100);
 }
 
 function updateProgress() { const comp = Object.values(state.completed).filter(x => x.completed).length; const pct = Math.round((comp / 100) * 100); document.getElementById('progressPct').textContent = `${comp}/100`; requestAnimationFrame(() => { document.getElementById('progressFill').style.width = pct + '%'; }); }
@@ -384,7 +445,15 @@ function changeFontSize(v) { state.settings.fontSize = parseInt(v); document.doc
 function setTheme(t) { state.settings.theme = t; document.body.setAttribute('data-theme', t); document.querySelectorAll('.theme-btn').forEach(b => b.classList.toggle('active', b.dataset.theme === t)); saveState(); }
 function applySettings() { changeFontSize(state.settings.fontSize); setTheme(state.settings.theme); document.getElementById('fontSlider').value = state.settings.fontSize; }
 
-async function openArticle(id) { /* same logic as original but referencing EA global */ currentArticle = id; submitted = false; selectedAnswers = {}; document.getElementById('mainPage').classList.remove('active'); document.getElementById('mainPage').classList.add('exiting'); setTimeout(() => { document.getElementById('mainPage').classList.remove('exiting'); document.getElementById('articlePage').classList.add('active'); window.scrollTo(0,0); }, 300); stopTimer(); timerSeconds = 0; updateTimerDisplay(); const data = await loadArticleData(id); if (data) renderArticle(data); else renderPlaceholderArticle(id); const saved = state.completed[id]; if (saved?.completed) { submitted = true; selectedAnswers = saved.answers || {}; if (saved.timeTaken) { timerSeconds = saved.timeTaken; updateTimerDisplay(); } if (data) reapplySubmission(data); } }
+async function openArticle(id) { /* same logic as original but referencing EA global */ currentArticle = id; submitted = false; selectedAnswers = {}; document.getElementById('mainPage').classList.remove('active'); document.getElementById('mainPage').classList.add('exiting'); setTimeout(() => { document.getElementById('mainPage').classList.remove('exiting'); document.getElementById('articlePage').classList.add('active'); window.scrollTo(0,0); }, 300); stopTimer(); timerSeconds = 0; updateTimerDisplay(); const data = await loadArticleData(id); if (data) renderArticle(data); else renderPlaceholderArticle(id); const saved = state.completed[id]; if (saved?.completed) { submitted = true; selectedAnswers = saved.answers || {}; if (saved.timeTaken) { timerSeconds = saved.timeTaken; updateTimerDisplay(); } if (data) reapplySubmission(data); } 
+                               // Inside openArticle() after the page transition timeout
+setTimeout(function() {
+    if (typeof window.loadAdsInView === 'function') {
+        window.loadAdsInView();
+    }
+}, 300);
+                               
+                               }
 async function loadArticleData(id) { if (typeof EA !== 'undefined' && EA[String(id)]) return EA[String(id)]; try { const r = await fetch(`${id}.json`); if (r.ok) return await r.json(); } catch(e) {} return null; }
 function renderArticle(data) { document.getElementById('artTitle').textContent = articleTitles[data.id-1] || data.title; document.getElementById('artDifficulty').textContent = data.difficulty; document.getElementById('passageText').innerHTML = data.passage.split('\n\n').map(p => `<p>${p}</p>`).join(''); const qC = document.getElementById('questionsContainer'); qC.innerHTML = ''; const L = ['A','B','C','D']; data.questions.forEach((q, qi) => { const b = document.createElement('div'); b.className = 'q-block'; b.innerHTML = `<div class="q-number">Question ${q.id}</div><div class="q-text">${q.question}</div>${q.options.map((o, oi) => `<div class="q-option" data-q="${qi}" data-o="${oi}" onclick="selectOption(${qi},${oi})"><span class="option-letter">${L[oi]}.</span><span>${o}</span></div>`).join('')}<div class="q-explanation" id="explanation-${qi}">${q.explanation}</div>`; qC.appendChild(b); }); document.getElementById('submitBtn').style.display = ''; document.getElementById('submitBtn').disabled = false; document.getElementById('resetBtn').style.display = 'none'; document.getElementById('articleScore').textContent = ''; startTimer(); }
 function renderPlaceholderArticle(id) { document.getElementById('artTitle').textContent = articleTitles[id-1]; document.getElementById('artDifficulty').textContent = 'Coming Soon'; document.getElementById('passageText').innerHTML = `<div style="color:var(--muted);text-align:center;padding:4rem 1rem;"><div style="font-size:2.5rem;">📄</div><p>Article not yet available</p><p style="font-size:0.82rem;">Place <strong>${id}.json</strong> in the same directory.</p></div>`; document.getElementById('questionsContainer').innerHTML = ''; document.getElementById('submitBtn').style.display = 'none'; document.getElementById('resetBtn').style.display = 'none'; document.getElementById('articleScore').textContent = ''; }
@@ -408,6 +477,81 @@ const EA={"1":{"id":1,"title":"Immigrants' adoption of English as their primary 
 
 window.init = init;
 init();
+</script>
+
+  <!-- ===== SAFE ADSENSE LOADER - FIXES "No slot size" ERROR ===== -->
+<script>
+(function() {
+    // Wait for adsbygoogle to be available
+    function loadVisibleAds() {
+        if (typeof adsbygoogle === 'undefined') {
+            setTimeout(loadVisibleAds, 500);
+            return;
+        }
+        
+        document.querySelectorAll('.adsbygoogle').forEach(function(ad) {
+            // Skip already loaded ads
+            if (ad.getAttribute('data-loaded') === 'true') return;
+            
+            // Check if ad container is visible
+            let parent = ad.parentElement;
+            while (parent && !parent.classList.contains('ad-slot')) {
+                parent = parent.parentElement;
+            }
+            
+            if (parent) {
+                const rect = parent.getBoundingClientRect();
+                const isVisible = rect.width > 0 && rect.height > 0 && 
+                                 window.getComputedStyle(parent).display !== 'none';
+                
+                if (isVisible) {
+                    try {
+                        (adsbygoogle = window.adsbygoogle || []).push({});
+                        ad.setAttribute('data-loaded', 'true');
+                    } catch(e) {
+                        console.debug('AdSense error:', e.message);
+                    }
+                }
+            }
+        });
+    }
+    
+    // Initial load
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(loadVisibleAds, 300);
+        });
+    } else {
+        setTimeout(loadVisibleAds, 300);
+    }
+    
+    // Watch for page transitions (when article page becomes active)
+    const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                const target = mutation.target;
+                if (target.classList && target.classList.contains('active')) {
+                    setTimeout(loadVisibleAds, 200);
+                }
+            }
+        });
+    });
+    
+    const mainPage = document.getElementById('mainPage');
+    const articlePage = document.getElementById('articlePage');
+    if (mainPage) observer.observe(mainPage, { attributes: true });
+    if (articlePage) observer.observe(articlePage, { attributes: true });
+    
+    // Also load ads when scrolling (for lazy loading)
+    let scrollTimeout;
+    window.addEventListener('scroll', function() {
+        if (scrollTimeout) clearTimeout(scrollTimeout);
+        scrollTimeout = setTimeout(loadVisibleAds, 200);
+    });
+    
+    // Expose function for manual reload
+    window.reloadAds = loadVisibleAds;
+})();
 </script>
 </body>
 </html>
